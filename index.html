@@ -1430,7 +1430,8 @@ function stageInfo(idx){
 let B=null, curQ=null, lastTopic='';
 function startStage(key){
   const st=getStage(key), z=ZONES[st.zi];
-  const mhp=st.review?150:st.final?200:st.boss?125:100;
+  const MON_HP_MULT=2; // 스테이지당 문제 수 배율 (1=기본 약 4문제, 2=약 8문제, 2.5=약 10문제)
+  const mhp=Math.round((st.review?150:st.final?200:st.boss?125:100)*MON_HP_MULT);
   const idx=st.review?st.diff:prog(key); // 적의 강함 (0~20 눈금)
   B={key,idx,st,z,monHP:mhp,monMax:mhp,hp:maxHP(),sp:0,ok:0,total:0,wrong:0,action:'',busy:false};
   document.getElementById('zone-label').textContent=st.review?`단원 골라 도전 · ${st.name}`:`${z.unit} · ${st.sub}`;
@@ -1739,14 +1740,20 @@ function showResultCard(){
   const sv=S();
   const col=p=>p>=80?'#00a800':p>=60?'#e8c000':'#d82000';
   let total=0,okAll=0;for(const k in sv.stats){total+=sv.stats[k].t;okAll+=sv.stats[k].c;}
+  const unitData=[];
   const ub=[['1단원 수의 범위와 어림하기',1],['2단원 분수의 곱셈',2],['3단원 합동과 대칭',3]].map(([nm,u])=>{
     let c=0,t=0;for(const k in sv.stats)if(TOPIC_UNIT[k]===u){c+=sv.stats[k].c;t+=sv.stats[k].t;}
-    const p=t?Math.round(c/t*100):0;
+    const p=t?Math.round(c/t*100):0;unitData.push({nm,p,t,color:col(p)});
     return `<div class="bar-row"><span class="bl">${nm}</span><span class="bw"><div style="width:${p}%;background:${col(p)}"></div></span><span class="bn">${t?p+'%':'-'}</span></div>`;}).join('');
   const weak=weakTopics(sv,3).filter(k=>pct(sv.stats[k])<1).slice(0,3);
   const strong=weakTopics(sv,3).reverse().filter(k=>pct(sv.stats[k])>=0.8).slice(0,2);
   const rv=REVIEW.filter(r=>sv.review[r.id]).map(r=>`${r.label} ${'★'.repeat(sv.review[r.id])}`).join(' · ');
   const now=new Date();
+  const fmtDate=`${now.getFullYear()}. ${now.getMonth()+1}. ${now.getDate()}. ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  window._rc={school:sv.school,cls:sv.cls,name:sv.name,title:titleOf(sv)||'',cleared:clearedCount(sv),ns:NS,stars:starSum(sv),maxStar:MAXSTAR,
+    total,rate:total?Math.round(okAll/total*100):0,units:unitData,
+    weak:weak.map(k=>`${TOPIC_NAME[k]} (${Math.round(pct(sv.stats[k])*100)}%, ${sv.stats[k].t}문제)`),
+    strong:strong.map(k=>TOPIC_NAME[k]),practice:sv.practice,ending:!!sv.ending,rv,date:fmtDate};
   modal(`<div class="result-card">
     <div class="rc-head"><span>괴물 탑의 비밀 Ⅱ · 5학년 2학기 1~3단원 학습 결과</span><b>${esc(sv.school)} ${esc(sv.cls)} · ${esc(sv.name)}${titleOf(sv)?` 「${titleOf(sv)}」`:''}</b></div>
     <div class="rc-body">
@@ -1758,8 +1765,83 @@ function showResultCard(){
     </div>
     <div class="rc-foot">${now.getFullYear()}. ${now.getMonth()+1}. ${now.getDate()}. ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} 기준 · made by m00n</div>
   </div>
-  <p style="font-size:11px;margin-bottom:8px">📸 이 화면을 캡처해서 선생님께 제출하세요.</p>
+  <p style="font-size:11px;margin-bottom:8px">💾 이미지로 저장해서 선생님께 제출하세요.</p>
+  <button class="btn blue" style="margin-bottom:6px" onclick="saveResultImage()">💾 결과 이미지 저장</button>
   <button class="btn gray" onclick="closeModal()">닫기</button>`);
+}
+
+// ── 결과 카드 이미지(PNG) 저장: 외부 라이브러리 없이 canvas로 직접 그림 ──
+async function saveResultImage(){
+  const d=window._rc;if(!d){toast('결과 카드를 먼저 열어 주세요');return;}
+  try{
+    const F='"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif';
+    try{await Promise.all(['700 16px','900 16px'].map(f=>document.fonts.load(f+' "Noto Sans KR"','가나다')));}catch(e){}
+    const W=480,SC=2,pad=20;
+    const lines=(txt,font,maxW,cx)=>{cx.font=font;const out=[];let cur='';
+      for(const ch of txt){if(ch==='\n'){out.push(cur);cur='';continue;}
+        if(cx.measureText(cur+ch).width>maxW&&cur){out.push(cur);cur=ch;}else cur+=ch;}
+      if(cur)out.push(cur);return out;};
+    const mk=h=>{const c=document.createElement('canvas');c.width=W*SC;c.height=h*SC;const x=c.getContext('2d');x.scale(SC,SC);x.textBaseline='top';return[c,x];};
+    // 높이 계산용 임시 캔버스
+    const [,mx]=mk(10);
+    const rvTxt=d.rv?'단원 골라 도전: '+d.rv:'';
+    const etc='푼 문제 '+d.total+'개 · 유형 연습 '+d.practice+'회'+(d.ending?' · 👑 엔딩 달성':'');
+    const etcL=lines(etc,'700 13px '+F,W-pad*2-8,mx).concat(rvTxt?lines(rvTxt,'700 13px '+F,W-pad*2-8,mx):[]);
+    const strongL=d.strong.length?lines(d.strong.join(', '),'700 13px '+F,W-pad*2-8,mx):[];
+    const head1=lines(d.school+' '+d.cls+' · '+d.name+(d.title?' 「'+d.title+'」':''),'900 18px '+F,W-pad*2-8,mx);
+    const H=64+head1.length*24+20+  // 헤더
+      70+                              // 통계
+      22+d.units.length*34+            // 단원별
+      22+(d.weak.length?d.weak.length*22:24)+
+      (strongL.length?22+strongL.length*20:0)+
+      22+etcL.length*20+
+      44;
+    const [c,x]=mk(H);
+    x.fillStyle='#fffdf0';x.fillRect(0,0,W,H);
+    // 헤더
+    const hh=36+head1.length*24+14;
+    x.fillStyle='#306230';x.fillRect(0,0,W,hh);
+    x.fillStyle='#c8e088';x.font='700 11px '+F;x.fillText('괴물 탑의 비밀 Ⅱ · 5학년 2학기 1~3단원 학습 결과',pad,14);
+    x.fillStyle='#fff';x.font='900 18px '+F;head1.forEach((l,i)=>x.fillText(l,pad,34+i*24));
+    let y=hh+14;
+    // 통계 3칸
+    const bw=(W-pad*2-16)/3;
+    [[d.cleared+'/'+d.ns,'클리어'],['⭐'+d.stars,'/ '+d.maxStar],[d.rate+'%','전체 정답률']].forEach((it,i)=>{
+      const bx=pad+i*(bw+8);x.fillStyle='#e8f0c8';x.beginPath();x.roundRect(bx,y,bw,54,6);x.fill();
+      x.textAlign='center';x.fillStyle='#0f380f';x.font='900 20px '+F;x.fillText(it[0],bx+bw/2,y+8);
+      x.fillStyle='#386820';x.font='700 11px '+F;x.fillText(it[1],bx+bw/2,y+34);x.textAlign='left';});
+    y+=70;
+    const sec=t=>{x.fillStyle='#306230';x.font='900 13px '+F;x.fillText(t,pad,y);y+=22;};
+    sec('📈 단원별 정답률');
+    d.units.forEach(u=>{
+      x.fillStyle='#0f380f';x.font='700 12px '+F;x.fillText(u.nm,pad+4,y);
+      x.fillStyle='#d8dcc0';x.beginPath();x.roundRect(pad+4,y+17,W-pad*2-56,8,4);x.fill();
+      if(u.p>0){x.fillStyle=u.color;x.beginPath();x.roundRect(pad+4,y+17,Math.max(8,(W-pad*2-56)*u.p/100),8,4);x.fill();}
+      x.fillStyle='#0f380f';x.font='900 12px '+F;x.textAlign='right';x.fillText(u.t?u.p+'%':'-',W-pad-4,y+14);x.textAlign='left';
+      y+=34;});
+    sec('🔍 더 연습할 유형');
+    x.fillStyle='#0f380f';x.font='700 13px '+F;
+    if(d.weak.length)d.weak.forEach((w,i)=>{x.fillText((i+1)+'. '+w,pad+4,y);y+=22;});
+    else{x.fillText('아직 충분히 풀지 않았거나, 약한 유형이 없어요 👍',pad+4,y);y+=24;}
+    if(strongL.length){sec('💪 잘하는 유형');x.fillStyle='#0f380f';x.font='700 13px '+F;strongL.forEach(l=>{x.fillText(l,pad+4,y);y+=20;});}
+    sec('🏅 기타');
+    x.fillStyle='#0f380f';x.font='700 13px '+F;etcL.forEach(l=>{x.fillText(l,pad+4,y);y+=20;});
+    x.fillStyle='#888';x.font='700 11px '+F;x.textAlign='right';x.fillText(d.date+' 기준 · made by m00n',W-pad,H-26);x.textAlign='left';
+    // 테두리
+    x.strokeStyle='#0f380f';x.lineWidth=3;x.strokeRect(1.5,1.5,W-3,H-3);
+    const blob=await new Promise(r=>c.toBlob(r,'image/png'));
+    if(!blob)throw new Error('toBlob');
+    const fname='결과카드_'+(d.cls+'_'+d.name).replace(/[\\/:*?"<>|\s]+/g,'')+'.png';
+    const file=new File([blob],fname,{type:'image/png'});
+    // 모바일: 공유 시트(갤러리 저장/전송), 실패 시 다운로드
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file],title:'학습 결과 카드'});return;}catch(e){if(e&&e.name==='AbortError')return;}
+    }
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=fname;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    toast('💾 이미지를 저장했어요!');
+  }catch(e){console.error(e);toast('저장에 실패했어요. 화면을 캡처해 주세요 📸');}
 }
 
 // ── 유형 연습 ──

@@ -307,7 +307,7 @@ body.zoomed{overflow-x:auto;}
   </div>
   <div class="prologue">
     <b>◀ 거울 탑의 그림자 ▶</b>
-    <p>혼돈 마왕은 쓰러졌지만, 그 그림자가 살아남아 왕국 한가운데에 '거울 탑'을 세웠습니다. 탑의 7개 구역은 수의 범위와 어림하기, 분수의 곱셈, 합동과 대칭의 봉인으로 잠겨 있습니다. 용사여, 다시 한 번 탑에 오르십시오!</p>
+    <p>혼돈 마왕은 쓰러졌지만, 그 그림자가 살아남아 왕국 한가운데에 '거울 탑'을 세웠습니다. 탑은 수의 범위와 어림하기, 분수의 곱셈, 합동과 대칭의 세 구역과 그림자 마왕의 옥좌로 이루어져 있습니다. 용사여, 다시 한 번 탑에 오르십시오!</p>
   </div>
   <div class="slot-panel">
     <span class="panel-label">💾 저장 슬롯 — 내 슬롯을 골라 주세요</span>
@@ -323,7 +323,7 @@ body.zoomed{overflow-x:auto;}
     <span class="who" id="map-who">용사</span>
     <span class="chips"><span class="chip gold">💰 <span id="map-coins">0</span></span><span class="chip">⚔️+<span id="map-atk">0</span> 🛡️-<span id="map-def">0</span></span><button class="snd-btn" onclick="toggleSound()" id="snd1">🔊</button><button class="snd-btn" onclick="openZoom()" title="화면 크기">🔍</button></span>
   </div>
-  <div class="map-sum"><span>🏰 클리어 <b id="map-clear">0</b> / 21</span><button class="star-btn" onclick="openStarRewards()">⭐ <b id="map-stars">0</b> / 63 <span class="gift">🎁</span> 별 보상</button></div>
+  <div class="map-sum"><span>🏰 클리어 <b id="map-clear">0</b> / <span class="ns">18</span></span><button class="star-btn" onclick="openStarRewards()">⭐ <b id="map-stars">0</b> / <span class="ms">54</span> <span class="gift">🎁</span> 별 보상</button></div>
   <div class="map-list" id="map-list"></div>
   <div class="saved-flag" id="saved-flag">💾 자동 저장됨</div>
   <div class="map-bottom">
@@ -1085,46 +1085,52 @@ function genQuestion(topic,lvl){return GEN[topic](lvl);}
 // ════════════════════════════════════════════════
 //  구역 · 스테이지
 // ════════════════════════════════════════════════
+// 구역 = 단원. 스테이지마다 괴물(mon)·색(mf)·좌우반전(flip)·배경(bg)을 따로 정할 수 있다
 const ZONES=[
- {name:'범위의 숲',unit:'1단원 · 수의 범위',u:1,mon:'tree',bg:'bg1',mf:'',bf:'',
-  mons:['경계선 새싹 정령','덩굴 문지기','👑 범위의 숲 정령왕'],
-  stages:[{t:['range_pick','range_line'],l:0},{t:['range_pick','range_line','range_count','range_ctx'],l:1},{t:['range_pick','range_line','range_count','range_ctx','range_max'],l:2}],
-  story:['거울 탑의 첫 번째 구역, 범위의 숲.','나무마다 「이상」, 「미만」 같은 글자가 새겨진 울타리가 둘러쳐져 있다.','???: \'경계선을 넘는 자, 숲에 갇히리라!\'','정령들은 경계의 수를 포함하는지, 포함하지 않는지를 묻는다.','이상·이하·초과·미만을 정확히 구분해 숲을 통과하자!']},
- {name:'어림의 미궁',unit:'1단원 · 어림하기',u:1,mon:'octopus',bg:'bg2',mf:'',bf:'',
-  mons:['올림 슬라임','버림 슬라임','👑 반올림 대왕 슬라임'],
-  stages:[{t:['round_nat'],l:0},{t:['round_nat','round_dec'],l:1},{t:['round_nat','round_dec','round_word','round_range'],l:2}],
-  story:['숲을 지나자 끝없이 갈라지는 지하 미궁이 나타났다.','벽에 적힌 숫자들은 모두 끝자리가 흐릿하게 지워져 있다.','???: \'정확한 수는 필요 없다… 어림만 잘하면 길이 열리지!\'','미궁의 슬라임들이 올림, 버림, 반올림의 문을 지키고 있다.','상황에 맞는 어림 방법으로 출구를 찾자!']},
- {name:'곱셈 시계탑',unit:'2단원 · 분수×자연수',u:2,mon:'clock',bg:'bg3',mf:'',bf:'',
-  mons:['톱니 유령','태엽 기사','👑 시계탑의 분수 시계왕'],
-  stages:[{t:['fm_pn'],l:0},{t:['fm_pn','fm_mn','fm_part'],l:1},{t:['fm_pn','fm_mn','fm_part','fm_cmp'],l:2}],
-  story:['째깍, 째깍… 거대한 톱니바퀴가 도는 시계탑.','시곗바늘이 1시간의 2/3, 3/4 같은 분수 칸을 가리키며 멈춰 있다.','???: \'분수에 자연수를 곱하지 못하면 시간이 영원히 멈출 것이다!\'','태엽 유령들이 분수와 자연수의 곱셈 봉인을 걸어 두었다.','분자와 자연수를 곱하고, 약분을 잊지 말자!']},
- {name:'분수 곱셈 계곡',unit:'2단원 · 분수×분수',u:2,mon:'crow',bg:'bg4',mf:'',bf:'',
-  mons:['분수 까마귀','약분 마녀','👑 계곡의 대분수 마녀'],
-  stages:[{t:['fm_unit','fm_pp'],l:0},{t:['fm_pp','fm_mm','fm_unit'],l:1},{t:['fm_pp','fm_mm','fm_three','fm_word'],l:2}],
-  story:['시계탑 너머, 보랏빛 노을이 지는 분수 계곡.','다리의 돌판마다 분수가 새겨져 있고, 몇 개는 쪼개져 사라졌다.','???: \'분수의 분수를 구할 수 있겠느냐? 크크크…\'','마녀 까마귀가 분수끼리의 곱셈으로 다리를 봉인했다.','분자는 분자끼리, 분모는 분모끼리! 대분수는 가분수로 바꾸자!']},
- {name:'합동의 마법진',unit:'3단원 · 합동',u:3,mon:'golem',bg:'bg5',mf:'',bf:'',
-  mons:['복제 돌거북','쌍둥이 골렘','👑 합동의 수호 골렘'],
-  stages:[{t:['cg_concept','cg_pairs'],l:0},{t:['cg_side','cg_angle','cg_pairs'],l:1},{t:['cg_side','cg_angle','cg_concept','cg_pairs'],l:2}],
-  story:['별빛 마법진이 빛나는 탑의 상층부.','마법진 위에 똑같은 모양의 돌 조각들이 이리저리 돌아가 있다.','???: \'모양과 크기가 같은 짝을 찾지 못하면 마법진이 너를 삼킨다!\'','복제 골렘들이 합동인 도형의 대응변과 대응각을 숨겼다.','돌려지고 뒤집힌 도형에서도 대응점을 찾아내자!']},
- {name:'거울의 방',unit:'3단원 · 선대칭·점대칭',u:3,mon:'golem',bg:'bg5',mf:'hue-rotate(170deg) saturate(1.3)',flip:true,bf:'hue-rotate(150deg)',
-  mons:['거울 돌거북','반사 골렘','👑 거울 골렘 대장'],
-  stages:[{t:['sy_line_pick','sy_axes','sy_alpha'],l:0},{t:['sy_point_pick','sy_both_pick','sy_alpha','sy_axes'],l:1},{t:['sy_line_len','sy_point_len','sy_concept','sy_both_pick'],l:2}],
-  story:['사방이 거울로 된 방. 내 모습이 끝없이 반사된다.','거울 속 골렘은 왼쪽과 오른쪽이 뒤바뀌어 있다.','???: \'접어도 겹치고, 돌려도 겹치는 비밀을 아느냐?\'','거울 골렘들이 선대칭과 점대칭의 봉인을 지키고 있다.','대칭축과 대칭의 중심을 찾아 거울을 깨뜨리자!']},
- {name:'그림자 마왕의 옥좌',unit:'1~3단원 총정리',u:0,mon:'dragon',bg:'bg6',mf:'hue-rotate(230deg) saturate(1.3)',bf:'hue-rotate(220deg)',
-  mons:['그림자 기사','그림자 마왕의 분신','👑 그림자 마왕'],
-  stages:[{t:['range_count','round_word','round_nat','fm_pp','fm_mn','fm_part'],l:1},{t:['fm_mm','fm_three','fm_word','cg_side','cg_angle','sy_both_pick','sy_axes'],l:2},
-          {t:['range_ctx','range_max','round_range','round_word','fm_mm','fm_three','fm_word','cg_angle','cg_side','sy_line_len','sy_point_len','sy_concept'],l:2}],
+ {name:'범위와 어림의 숲',unit:'1단원 · 수의 범위와 어림하기',u:1,bg:'bg1',bf:'',
+  stages:[
+   {sub:'이상·이하',t:['range_pick','range_line'],l:0,mon:'tree',name:'경계선 새싹 정령'},
+   {sub:'초과·미만·수직선',t:['range_pick','range_line','range_count','range_ctx'],l:1,mon:'tree',mf:'hue-rotate(60deg)',name:'덩굴 문지기'},
+   {sub:'올림·버림',t:['round_nat'],l:0,mon:'octopus',bg:'bg2',name:'올림 슬라임'},
+   {sub:'반올림·소수의 어림',t:['round_nat','round_dec'],l:1,mon:'octopus',mf:'hue-rotate(120deg)',bg:'bg2',name:'반올림 슬라임'},
+   {sub:'1단원 보스',t:['range_ctx','range_max','range_count','round_word','round_range','round_dec'],l:2,mon:'tree',name:'👑 범위와 어림의 정령왕'}],
+  story:['거울 탑의 첫 번째 구역, 범위와 어림의 숲.','나무마다 「이상」, 「미만」 같은 글자가 새겨진 울타리가 둘러쳐져 있다.','숲 깊은 곳 미궁에는 끝자리가 흐릿하게 지워진 숫자들이 떠다닌다.','???: \'경계선을 넘는 자, 숲에 갇히리라!\'','이상·이하·초과·미만을 구분하고, 올림·버림·반올림으로 길을 찾자!']},
+ {name:'분수 곱셈 시계탑',unit:'2단원 · 분수의 곱셈',u:2,bg:'bg3',bf:'',
+  stages:[
+   {sub:'분수와 자연수의 곱셈',t:['fm_pn'],l:0,mon:'clock',name:'톱니 유령'},
+   {sub:'대분수와 자연수 · 분수만큼',t:['fm_pn','fm_mn','fm_part'],l:1,mon:'clock',mf:'hue-rotate(200deg)',name:'태엽 기사'},
+   {sub:'분수와 분수의 곱셈',t:['fm_unit','fm_pp'],l:0,mon:'crow',bg:'bg4',name:'분수 까마귀'},
+   {sub:'대분수 · 세 분수의 곱셈',t:['fm_pp','fm_mm','fm_three'],l:1,mon:'crow',mf:'hue-rotate(100deg)',bg:'bg4',name:'약분 마녀'},
+   {sub:'2단원 보스',t:['fm_cmp','fm_mn','fm_mm','fm_three','fm_word','fm_part'],l:2,mon:'clock',name:'👑 분수 시계왕'}],
+  story:['째깍, 째깍… 거대한 톱니바퀴가 도는 시계탑.','시곗바늘이 1시간의 2/3, 3/4 같은 분수 칸을 가리키며 멈춰 있다.','탑 꼭대기 너머로는 분수 돌판이 쪼개진 계곡 다리가 이어진다.','???: \'분수에 수를 곱하지 못하면 시간이 영원히 멈출 것이다!\'','분자는 분자끼리, 분모는 분모끼리! 대분수는 가분수로 바꾸고, 약분도 잊지 말자!']},
+ {name:'합동과 대칭의 거울 궁전',unit:'3단원 · 합동과 대칭',u:3,bg:'bg5',bf:'',
+  stages:[
+   {sub:'합동의 뜻',t:['cg_concept','cg_pairs'],l:0,mon:'golem',name:'복제 돌거북'},
+   {sub:'대응변·대응각',t:['cg_side','cg_angle','cg_pairs'],l:1,mon:'golem',mf:'hue-rotate(60deg)',name:'쌍둥이 골렘'},
+   {sub:'선대칭도형',t:['sy_line_pick','sy_axes','sy_alpha'],l:0,mon:'golem',mf:'hue-rotate(170deg) saturate(1.3)',flip:true,bf:'hue-rotate(150deg)',name:'거울 돌거북'},
+   {sub:'점대칭도형',t:['sy_point_pick','sy_both_pick','sy_alpha','sy_axes'],l:1,mon:'golem',mf:'hue-rotate(250deg) saturate(1.3)',flip:true,bf:'hue-rotate(150deg)',name:'반사 골렘'},
+   {sub:'3단원 보스',t:['cg_side','cg_angle','sy_line_len','sy_point_len','sy_concept','sy_both_pick'],l:2,mon:'golem',mf:'hue-rotate(170deg) saturate(1.3)',flip:true,bf:'hue-rotate(150deg)',name:'👑 거울 골렘 대장'}],
+  story:['별빛 마법진이 빛나는 탑의 상층부, 사방이 거울로 된 궁전.','마법진 위에는 똑같은 모양의 돌 조각들이 이리저리 돌아가 있다.','거울 속 골렘은 왼쪽과 오른쪽이 뒤바뀌어 있다.','???: \'포개면 겹치고, 접어도 겹치고, 돌려도 겹치는 비밀을 아느냐?\'','합동인 도형의 대응점을 찾고, 대칭축과 대칭의 중심으로 거울을 깨뜨리자!']},
+ {name:'그림자 마왕의 옥좌',unit:'1~3단원 총정리',u:0,bg:'bg6',bf:'hue-rotate(220deg)',
+  stages:[
+   {sub:'총정리 1',t:['range_count','round_word','round_nat','fm_pp','fm_mn','fm_part'],l:1,mon:'dragon',mf:'hue-rotate(160deg)',name:'그림자 기사'},
+   {sub:'총정리 2',t:['fm_mm','fm_three','fm_word','cg_side','cg_angle','sy_both_pick','sy_axes'],l:2,mon:'dragon',mf:'hue-rotate(90deg) saturate(.8)',name:'그림자 마왕의 분신'},
+   {sub:'최종 보스',t:['range_ctx','range_max','round_range','round_word','fm_mm','fm_three','fm_word','cg_angle','cg_side','sy_line_len','sy_point_len','sy_concept'],l:2,mon:'dragon',mf:'hue-rotate(230deg) saturate(1.3)',name:'👑 그림자 마왕'}],
   story:['드디어 거울 탑의 꼭대기, 그림자 마왕의 옥좌.','지금까지 풀었던 모든 봉인이 하나로 모여 소용돌이친다.','그림자 마왕: \'수의 범위, 분수, 도형… 그 모든 것을 기억하고 있느냐?\'','1단원부터 3단원까지, 모든 지식을 총동원할 때다!','2학기 총정리의 마지막 결전을 시작하자!']}
 ];
-const STAGES=[];ZONES.forEach((z,zi)=>z.stages.forEach((s,si)=>STAGES.push({...s,zi,si,boss:si===2,final:zi===6&&si===2,label:`${zi+1}-${si+1}`})));
+const STAGES=[];ZONES.forEach((z,zi)=>{z.first=STAGES.length;z.stages.forEach((s,si)=>{const last=si===z.stages.length-1;
+  STAGES.push({bg:z.bg,bf:z.bf,mf:'',...s,zi,si,boss:last,final:zi===ZONES.length-1&&last,label:`${zi+1}-${si+1}`});});});
+const NS=STAGES.length, MAXSTAR=NS*3;
+// 적의 강함은 '전체 중 몇 번째 스테이지인가'로 정한다 (0~20 눈금)
+const prog=idx=>idx/(NS-1)*20;
 // 전체 클리어 뒤 열리는 '단원 골라 도전' (그 단원의 모든 유형이 섞여 나옴)
 const UNIT_TOPICS={1:[],2:[],3:[]};
 STAGES.forEach(st=>st.t.forEach(t=>{const u=TOPIC_UNIT[t];if(!UNIT_TOPICS[u].includes(t))UNIT_TOPICS[u].push(t);}));
 const REVIEW=[
-  {id:'r1',u:1,label:'1단원 복습',name:'1단원 수의 범위와 어림하기',t:UNIT_TOPICS[1],l:2,zi:1,si:2,boss:true,review:true,diff:16},
-  {id:'r2',u:2,label:'2단원 복습',name:'2단원 분수의 곱셈',t:UNIT_TOPICS[2],l:2,zi:3,si:2,boss:true,review:true,diff:16},
-  {id:'r3',u:3,label:'3단원 복습',name:'3단원 합동과 대칭',t:UNIT_TOPICS[3],l:2,zi:5,si:2,boss:true,review:true,diff:16},
-  {id:'r0',u:0,label:'전체 복습',name:'1~3단원 전체',t:[...UNIT_TOPICS[1],...UNIT_TOPICS[2],...UNIT_TOPICS[3]],l:2,zi:6,si:2,boss:true,review:true,diff:18},
+  {id:'r1',u:1,label:'1단원 복습',name:'1단원 수의 범위와 어림하기',t:UNIT_TOPICS[1],l:2,zi:0,boss:true,review:true,diff:16,mon:'tree',mf:'hue-rotate(300deg)',bg:'bg1'},
+  {id:'r2',u:2,label:'2단원 복습',name:'2단원 분수의 곱셈',t:UNIT_TOPICS[2],l:2,zi:1,boss:true,review:true,diff:16,mon:'clock',mf:'hue-rotate(300deg)',bg:'bg3'},
+  {id:'r3',u:3,label:'3단원 복습',name:'3단원 합동과 대칭',t:UNIT_TOPICS[3],l:2,zi:2,boss:true,review:true,diff:16,mon:'golem',mf:'hue-rotate(300deg)',bg:'bg5'},
+  {id:'r0',u:0,label:'전체 복습',name:'1~3단원 전체',t:[...UNIT_TOPICS[1],...UNIT_TOPICS[2],...UNIT_TOPICS[3]],l:2,zi:3,boss:true,review:true,diff:18,mon:'dragon',mf:'hue-rotate(230deg) saturate(1.3)',bg:'bg6',bf:'hue-rotate(220deg)'},
 ];
 const getStage=k=>typeof k==='number'?STAGES[k]:REVIEW.find(r=>r.id===k);
 
@@ -1155,10 +1161,10 @@ const EQUIP={
 };
 // ⭐ 별 수집 보상: 별을 모으면 자동으로 칭호와 선물을 받는다
 const STAR_REWARDS=[
-  {n:15,title:'별 줍는 견습 용사',give:'💡 힌트 부적 3개',fn:sv=>{sv.inv.hint+=3;}},
-  {n:30,title:'별빛 기사',give:'🧪✨ 고급 생명수 2개 + 💰 50코인',fn:sv=>{sv.inv.megaPotion+=2;sv.coins+=50;}},
-  {n:45,title:'은하 수호자',give:'🌙 달빛 망토 (숨은 장비: 받는 피해 -5, 최대 HP +20)',fn:sv=>{sv.owned.moonCloak=true;}},
-  {n:63,title:'거울 탑의 주인',give:'👑 별빛 왕관 (숨은 장비: 공격력 +10, 최대 HP +30) + 용사에게 황금빛 오라',fn:sv=>{sv.owned.starCrown=true;}},
+  {n:12,title:'별 줍는 견습 용사',give:'💡 힌트 부적 3개',fn:sv=>{sv.inv.hint+=3;}},
+  {n:24,title:'별빛 기사',give:'🧪✨ 고급 생명수 2개 + 💰 50코인',fn:sv=>{sv.inv.megaPotion+=2;sv.coins+=50;}},
+  {n:36,title:'은하 수호자',give:'🌙 달빛 망토 (숨은 장비: 받는 피해 -5, 최대 HP +20)',fn:sv=>{sv.owned.moonCloak=true;}},
+  {n:54,title:'거울 탑의 주인',give:'👑 별빛 왕관 (숨은 장비: 공격력 +10, 최대 HP +30) + 용사에게 황금빛 오라',fn:sv=>{sv.owned.starCrown=true;}},
 ];
 function checkStarRewards(sv){
   const got=[], st=starSum(sv);
@@ -1173,7 +1179,7 @@ function titleOf(sv){let t='';STAR_REWARDS.forEach(r=>{if(sv.claimed&&sv.claimed
 const SKEY='monsterTower2_save_v1';
 let storageOK=true, slots=[null,null,null], cur=-1;
 function newSave(name,school,cls){
-  return {v:1,name,school,cls,created:Date.now(),updated:Date.now(),stars:{},coins:0,
+  return {v:2,name,school,cls,created:Date.now(),updated:Date.now(),stars:{},coins:0,
     inv:{potion:1,megaPotion:0,scroll:0,lightning:0,hint:2},owned:{},stats:{},wrong:[],seen:{},ending:false,review:{},practice:0,claimed:{}};
 }
 // 예전 버전이나 일부가 빠진 저장 데이터도 안전하게 불러오도록 빈칸을 채운다
@@ -1181,6 +1187,8 @@ function normalize(sv){
   if(!sv||typeof sv!=='object'||!sv.name) return null;
   const d=newSave(String(sv.name),String(sv.school||''),String(sv.cls||''));
   const o={...d,...sv};
+  const old=(+sv.v||1)<2; // 예전 7구역 구조의 기록
+  if(old){sv={...sv,stars:{},seen:{},review:{},claimed:{}};o.v=2;}
   o.inv={...d.inv,...(sv.inv||{})};
   for(const k in o.inv) o.inv[k]=Math.max(0,Math.floor(+o.inv[k]||0));
   o.coins=Math.max(0,Math.floor(+o.coins||0));
@@ -1261,7 +1269,7 @@ function renderSlots(){
     else{
       d.className='slot';
       d.innerHTML=`<span class="slot-num">${i+1}</span><div class="slot-info"><div class="slot-name">${esc(sv.name)} <span style="font-size:10px;color:#386820">${esc(sv.school)} ${esc(sv.cls)}</span></div>
-        <div class="slot-meta">🏰 ${clearedCount(sv)}/21 클리어 · ⭐ ${starSum(sv)}/63 · 💰 ${sv.coins}${sv.ending?' · 👑 엔딩':''}<br>마지막 저장 ${fmtDate(sv.updated)}</div></div>
+        <div class="slot-meta">🏰 ${clearedCount(sv)}/${NS} 클리어 · ⭐ ${starSum(sv)}/${MAXSTAR} · 💰 ${sv.coins}${sv.ending?' · 👑 엔딩':''}<br>마지막 저장 ${fmtDate(sv.updated)}</div></div>
         <button class="slot-del" title="슬롯 지우기">🗑</button>`;
       d.onclick=e=>{if(e.target.closest('.slot-del'))return;enterSlot(i);};
       d.querySelector('.slot-del').onclick=e=>{e.stopPropagation();askDelete(i);};
@@ -1343,28 +1351,29 @@ function renderMap(){
   document.getElementById('map-atk').textContent=ATK();
   document.getElementById('map-def').textContent=DEF();
   document.getElementById('map-clear').textContent=clearedCount(sv);
+  document.querySelector('.map-sum .ns').textContent=NS;document.querySelector('.map-sum .ms').textContent=MAXSTAR;
   document.getElementById('map-stars').textContent=starSum(sv);
   const open=unlockedUpTo(sv);
   const list=document.getElementById('map-list');list.innerHTML='';
   ZONES.forEach((z,zi)=>{
-    const first=zi*3, locked=first>open;
+    const first=z.first, locked=first>open, bs=z.stages[z.stages.length-1];
     const card=document.createElement('div');card.className='zone'+(locked?' locked':'');
     card.innerHTML=`<div class="zone-bg" style="background-image:url('${SPRITES[z.bg]}');filter:${z.bf||'none'}"></div>
-      <div class="zone-in"><div class="zone-head"><img src="${SPRITES[z.mon]}" style="${z.mf?'filter:'+z.mf+' drop-shadow(1px 2px 0 #000a);':''}${z.flip?'transform:scaleX(-1);':''}${locked?'filter:brightness(0) opacity(.6);':''}" alt="">
-      <div><div class="zone-unit">${zi+1}구역 · ${z.unit}</div><div class="zone-title">${locked?'🔒 ':''}${z.name}</div></div></div>
+      <div class="zone-in"><div class="zone-head"><img src="${SPRITES[bs.mon]}" style="${bs.mf?'filter:'+bs.mf+' drop-shadow(1px 2px 0 #000a);':''}${bs.flip?'transform:scaleX(-1);':''}${locked?'filter:brightness(0) opacity(.6);':''}" alt="">
+      <div><div class="zone-unit">${zi<3?'':'최종 · '}${z.unit}</div><div class="zone-title">${locked?'🔒 ':''}${z.name}</div></div></div>
       <div class="stage-row"></div></div>`;
     const row=card.querySelector('.stage-row');
     z.stages.forEach((st,si)=>{
       const idx=first+si, b=document.createElement('button');
       const lk=idx>open, got=sv.stars[idx]||0;
-      b.className='stage-btn'+(si===2?' boss':'')+(lk?' lock':'')+(idx===open?' next':'');
-      b.innerHTML=`<span class="sn">${lk?'🔒':''}${si===2?'👑 ':''}${zi+1}-${si+1}</span><span class="st">${lk?'':(got?'★'.repeat(got)+'☆'.repeat(3-got):'도전!')}</span>`;
+      b.className='stage-btn'+(st.boss||si===z.stages.length-1?' boss':'')+(lk?' lock':'')+(idx===open?' next':'');
+      b.innerHTML=`<span class="sn">${lk?'🔒':''}${si===z.stages.length-1?'👑':''}${zi+1}-${si+1}</span><span class="st">${lk?'':(got?'★'.repeat(got)+'☆'.repeat(3-got):'도전!')}</span>`;
       b.onclick=()=>lk?toast('앞 스테이지를 먼저 클리어하세요!'):stageInfo(idx);
       row.appendChild(b);
     });
     list.appendChild(card);
   });
-  // 21스테이지를 모두 깨면 '단원 골라 도전'이 열린다
+  // 모든 스테이지를 깨면 '단원 골라 도전'이 열린다
   const rc=document.createElement('div');
   if(clearedCount(sv)>=STAGES.length){
     rc.className='review-card';
@@ -1375,15 +1384,15 @@ function renderMap(){
       b.onclick=()=>reviewInfo(r.id);g.appendChild(b);});
   }else{
     rc.className='review-card locked';
-    rc.innerHTML=`<h4>🔒 단원 골라 도전</h4><div class="rd" style="color:#444">21스테이지를 모두 클리어하면 열려요. 그 뒤에는 1·2·3단원 중 골라서 복습 전투를 할 수 있어요. (지금 ${clearedCount(sv)}/21)</div>`;
+    rc.innerHTML=`<h4>🔒 단원 골라 도전</h4><div class="rd" style="color:#444">${NS}스테이지를 모두 클리어하면 열려요. 그 뒤에는 1·2·3단원 중 골라서 복습 전투를 할 수 있어요. (지금 ${clearedCount(sv)}/${NS})</div>`;
   }
   list.appendChild(rc);
   flashSaved();
 }
 function reviewInfo(id){
-  const r=getStage(id), z=ZONES[r.zi], got=S().review[id]||0;
+  const r=getStage(id), got=S().review[id]||0;
   modal(`<h3>⚔️ ${r.label}</h3><div style="font-size:12px;font-weight:900;color:#386820;margin-bottom:6px">${r.name} · 모든 유형이 섞여 나와요</div>
-    <img src="${SPRITES[z.mon]}" style="width:96px;height:96px;image-rendering:pixelated;${z.mf?'filter:'+z.mf+';':''}${z.flip?'transform:scaleX(-1);':''}" alt="">
+    <img src="${SPRITES[r.mon]}" style="width:96px;height:96px;image-rendering:pixelated;${r.mf?'filter:'+r.mf+';':''}" alt="">
     <p style="font-size:12px;margin:6px 0 8px">📚 <b>출제:</b> ${[...new Set(r.t)].map(t=>TOPIC_NAME[t]).join(', ')}</p>
     <div class="stars-big" style="font-size:24px">${starsHTML(got)}</div>
     <div class="row"><button class="btn gray" onclick="closeModal()">닫기</button><button class="btn" onclick="closeModal();startStage('${id}')">⚔️ 전투 시작</button></div>`);
@@ -1392,9 +1401,9 @@ function stageInfo(idx){
   const st=STAGES[idx], z=ZONES[st.zi], sv=S();
   const topics=[...new Set(st.t)].map(t=>TOPIC_NAME[t]).join(', ');
   const got=sv.stars[idx]||0;
-  modal(`<h3>${st.boss?'👑 ':''}${st.label} ${z.mons[st.si].replace('👑 ','')}</h3>
-    <div style="font-size:12px;font-weight:900;color:#386820;margin-bottom:6px">${z.name} · ${z.unit}</div>
-    <img src="${SPRITES[z.mon]}" style="width:${st.boss?96:76}px;height:${st.boss?96:76}px;image-rendering:pixelated;${z.mf?'filter:'+z.mf+';':''}${z.flip?'transform:scaleX(-1);':''}" alt="">
+  modal(`<h3>${st.boss?'👑 ':''}${st.label} ${st.name.replace('👑 ','')}</h3>
+    <div style="font-size:12px;font-weight:900;color:#386820;margin-bottom:6px">${z.unit} · ${st.sub}</div>
+    <img src="${SPRITES[st.mon]}" style="width:${st.boss?96:76}px;height:${st.boss?96:76}px;image-rendering:pixelated;${st.mf?'filter:'+st.mf+';':''}${st.flip?'transform:scaleX(-1);':''}" alt="">
     <p style="font-size:12px;margin:6px 0 8px">📚 <b>출제:</b> ${topics}</p>
     <div class="stars-big" style="font-size:24px">${starsHTML(got)}</div>
     <p style="font-size:11px;color:#386820">오답 0개 ★★★ · 1~2개 ★★ · 3개 이상 ★</p>
@@ -1408,15 +1417,15 @@ let B=null, curQ=null, lastTopic='';
 function startStage(key){
   const st=getStage(key), z=ZONES[st.zi];
   const mhp=st.review?150:st.final?200:st.boss?125:100;
-  const idx=st.review?st.diff:key; // 적의 공격력 계산용
+  const idx=st.review?st.diff:prog(key); // 적의 강함 (0~20 눈금)
   B={key,idx,st,z,monHP:mhp,monMax:mhp,hp:maxHP(),sp:0,ok:0,total:0,wrong:0,action:'',busy:false};
-  document.getElementById('zone-label').textContent=st.review?`단원 골라 도전 · ${st.name}`:`${z.name} · ${z.unit}`;
-  document.getElementById('stage-badge').textContent=(st.boss?'👑 ':'')+st.label;
-  const nm=document.getElementById('mon-name');nm.textContent=z.mons[st.si];nm.className='tag'+(st.boss?' boss':'');
-  const bg=document.getElementById('bg-layer');bg.style.backgroundImage=`url('${SPRITES[z.bg]}')`;bg.style.filter=z.bf||'none';
-  const mi=document.getElementById('mon-img');mi.src=SPRITES[z.mon];mi.className=st.boss?'boss':'';
-  mi.style.filter=(z.mf||'')+(st.boss?' drop-shadow(0 0 6px #ff4000)':'');mi.style.transform=z.flip?'scaleX(-1)':'';
-  const mn=st.review?`${st.label}의 수호자`:z.mons[st.si];document.getElementById('mon-name').textContent=st.review?'👑 '+mn:mn;B.mn=mn;document.getElementById('story-box').textContent=st.boss?`${mn}${josa(mn,'이가')} 나타났다! 강력한 보스다!`:`${mn}${josa(mn,'이가')} 길을 막는다! 봉인을 풀어 물리치자!`;
+  document.getElementById('zone-label').textContent=st.review?`단원 골라 도전 · ${st.name}`:`${z.unit} · ${st.sub}`;
+  document.getElementById('stage-badge').textContent=st.review?'👑 복습':(st.boss?'👑 ':'')+st.label;
+  const nm=document.getElementById('mon-name');nm.textContent=st.review?'':st.name;nm.className='tag'+(st.boss?' boss':'');
+  const bg=document.getElementById('bg-layer');bg.style.backgroundImage=`url('${SPRITES[st.bg||z.bg]}')`;bg.style.filter=st.bf||'none';
+  const mi=document.getElementById('mon-img');mi.src=SPRITES[st.mon];mi.className=st.boss?'boss':'';
+  mi.style.filter=(st.mf||'')+(st.boss?' drop-shadow(0 0 6px #ff4000)':'');mi.style.transform=st.flip?'scaleX(-1)':'';
+  const mn=st.review?`${st.label}의 수호자`:st.name;document.getElementById('mon-name').textContent=st.review?'👑 '+mn:mn;B.mn=mn;document.getElementById('story-box').textContent=st.boss?`${mn}${josa(mn,'이가')} 나타났다! 강력한 보스다!`:`${mn}${josa(mn,'이가')} 길을 막는다! 봉인을 풀어 물리치자!`;
   document.getElementById('player-img').classList.toggle('gold-aura',!!S().owned.starCrown);
   showScreen('game-screen');showArea('action-area');updBars();
   if(!st.review&&!S().seen[st.zi]){S().seen[st.zi]=true;persist();openStory(st.zi);}
@@ -1560,10 +1569,10 @@ function reviewClear(){
 }
 function stageClear(){
   if(B.st.review){reviewClear();return;}
-  const sv=S(), idx=B.idx, first=!sv.stars[idx];
+  const sv=S(), idx=B.key, first=!sv.stars[idx];
   const stars=B.wrong===0?3:B.wrong<=2?2:1;
   const prev=sv.stars[idx]||0;
-  const coins=(first?(B.st.boss?50:35):12)+stars*5+CBON();
+  const coins=(first?(B.st.boss?60:42):12)+stars*5+CBON();
   sv.coins+=coins;
   if(stars>prev)sv.stars[idx]=stars;
   let lucky='';
@@ -1591,7 +1600,7 @@ function stageFail(){
 let storyLines=[],storyI=0,storyThen=null;
 function storyHTML(t){return esc(t).replace(/(\d+)\/(\d+)/g,'<span class="fr"><i>$1</i><i>$2</i></span>');}
 function openStory(zi,then){storyLines=ZONES[zi].story;storyI=0;storyThen=then||null;
-  document.getElementById('story-title').textContent=`${zi+1}구역 · ${ZONES[zi].name}`;
+  document.getElementById('story-title').textContent=`${ZONES[zi].unit} · ${ZONES[zi].name}`;
   document.getElementById('story-text').innerHTML=storyHTML(storyLines[0]);document.getElementById('story-ov').classList.add('on');}
 function nextStory(){storyI++;if(storyI<storyLines.length)document.getElementById('story-text').innerHTML=storyHTML(storyLines[storyI]);
   else{document.getElementById('story-ov').classList.remove('on');if(storyThen)storyThen();}}
@@ -1613,7 +1622,7 @@ function showEnding(){
 그림자 마왕은 사람들이 배운 것을 잊어버릴 때 생기는 어둠이 모여 태어난 존재였지요.
 
 [${n}]${josa(n,'은는')} 모든 봉인을 기억해 냈고, 왕국에는 다시 빛이 돌아왔습니다.
-⭐ 모은 별: ${starSum(sv)} / 63
+⭐ 모은 별: ${starSum(sv)} / ${MAXSTAR}
 
 🏆 축하합니다! '괴물 탑의 비밀 Ⅱ'를 모두 클리어했습니다!
 (별 3개를 모두 모으면 진정한 거울 탑의 주인!)`;
@@ -1664,7 +1673,7 @@ function openRecord(){
   const col=p=>p>=80?'#00a800':p>=60?'#e8c000':'#d82000';
   const bar=(label,c,t,btn)=>{const p=t?Math.round(c/t*100):0;return `<div class="bar-row"><span class="bl">${label}</span><span class="bw"><div style="width:${p}%;background:${col(p)}"></div></span><span class="bn">${t?p+'% ('+c+'/'+t+')':'아직 안 풂'}</span>${btn||''}</div>`;};
   const can=practicable();
-  let h=`<div class="rec-card"><h4>🧑‍🎓 ${esc(sv.name)} · ${esc(sv.school)} ${esc(sv.cls)}</h4><div style="font-size:12px;font-weight:700;color:#386820">🏰 ${clearedCount(sv)}/21 클리어 · ⭐ ${starSum(sv)}/63 · 💰 ${sv.coins}코인${sv.ending?' · 👑 엔딩 달성':''}</div>
+  let h=`<div class="rec-card"><h4>🧑‍🎓 ${esc(sv.name)} · ${esc(sv.school)} ${esc(sv.cls)}</h4><div style="font-size:12px;font-weight:700;color:#386820">🏰 ${clearedCount(sv)}/${NS} 클리어 · ⭐ ${starSum(sv)}/${MAXSTAR} · 💰 ${sv.coins}코인${sv.ending?' · 👑 엔딩 달성':''}</div>
     <button class="btn blue" style="margin-top:8px;font-size:13px;padding:8px" onclick="showResultCard()">🪪 결과 카드 보기 (선생님께 제출용)</button></div>`;
   h+=`<div class="rec-card"><h4>📈 단원별 정답률</h4>`;
   units.forEach(([nm,u])=>{let c=0,t=0;for(const k in sv.stats)if(TOPIC_UNIT[k]===u){c+=sv.stats[k].c;t+=sv.stats[k].t;}h+=bar(nm,c,t);});
@@ -1702,7 +1711,7 @@ function showResultCard(){
   modal(`<div class="result-card">
     <div class="rc-head"><span>괴물 탑의 비밀 Ⅱ · 5학년 2학기 1~3단원 학습 결과</span><b>${esc(sv.school)} ${esc(sv.cls)} · ${esc(sv.name)}${titleOf(sv)?` 「${titleOf(sv)}」`:''}</b></div>
     <div class="rc-body">
-      <div class="rc-stats"><div><b>${clearedCount(sv)}/21</b>클리어</div><div><b>⭐${starSum(sv)}</b>/ 63</div><div><b>${total?Math.round(okAll/total*100):0}%</b>전체 정답률</div></div>
+      <div class="rc-stats"><div><b>${clearedCount(sv)}/${NS}</b>클리어</div><div><b>⭐${starSum(sv)}</b>/ ${MAXSTAR}</div><div><b>${total?Math.round(okAll/total*100):0}%</b>전체 정답률</div></div>
       <div class="rc-sec">📈 단원별 정답률</div>${ub}
       <div class="rc-sec">🔍 더 연습할 유형</div>${weak.length?`<ol class="rc-weak">${weak.map(k=>`<li>${TOPIC_NAME[k]} (${Math.round(pct(sv.stats[k])*100)}%, ${sv.stats[k].t}문제)</li>`).join('')}</ol>`:'<div style="font-size:12px">아직 충분히 풀지 않았거나, 약한 유형이 없어요 👍</div>'}
       ${strong.length?`<div class="rc-sec">💪 잘하는 유형</div><div style="font-size:12px">${strong.map(k=>TOPIC_NAME[k]).join(', ')}</div>`:''}
@@ -1771,8 +1780,8 @@ function openStarRewards(){
   const items=STAR_REWARDS.map(r=>{const got=sv.claimed[r.n];
     return `<div class="sr-item ${got?'got':st>=r.n?'':'lock'}"><span class="sr-n">⭐${r.n}</span><span><div class="sr-t">「${r.title}」</div><div class="sr-g">${r.give}</div></span><span class="sr-s">${got?'✅ 받음':`${r.n-st}개 남음`}</span></div>`;}).join('');
   modal(`<h3>⭐ 별 수집 보상</h3>
-    <div style="font-size:13px;font-weight:900;color:#0f380f">모은 별 ${st} / 63${ttl?` · 지금 칭호 「${ttl}」`:''}</div>
-    <div class="sr-bar"><div style="width:${st/63*100}%"></div></div>${items}
+    <div style="font-size:13px;font-weight:900;color:#0f380f">모은 별 ${st} / ${MAXSTAR}${ttl?` · 지금 칭호 「${ttl}」`:''}</div>
+    <div class="sr-bar"><div style="width:${st/MAXSTAR*100}%"></div></div>${items}
     <p style="font-size:11px;color:#386820;margin:6px 0 8px">스테이지를 오답 없이 깨면 ★3개! 이미 깬 스테이지도 다시 도전해서 별을 늘릴 수 있어요.</p>
     <button class="btn gray" onclick="closeModal()">닫기</button>`);
 }

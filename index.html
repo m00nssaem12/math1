@@ -1834,8 +1834,9 @@ async function saveResultImage(){
     if(!blob)throw new Error('toBlob');
     const fname='결과카드_'+(d.cls+'_'+d.name).replace(/[\\/:*?"<>|\s]+/g,'')+'.png';
     const file=new File([blob],fname,{type:'image/png'});
-    // 모바일: 공유 시트(갤러리 저장/전송), 실패 시 다운로드
-    if(navigator.canShare&&navigator.canShare({files:[file]})){
+    // 모바일만 공유 시트(갤러리 저장/전송), PC는 공유 창 없이 바로 다운로드
+    const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+    if(isMobile&&navigator.canShare&&navigator.canShare({files:[file]})){
       try{await navigator.share({files:[file],title:'학습 결과 카드'});return;}catch(e){if(e&&e.name==='AbortError')return;}
     }
     const url=URL.createObjectURL(blob),a=document.createElement('a');
